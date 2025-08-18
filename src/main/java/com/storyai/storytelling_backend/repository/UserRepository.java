@@ -1,0 +1,14 @@
+package com.storyai.storytelling_backend.repository;
+
+import com.storyai.storytelling_backend.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findByUsernqme(String Username);
+    Optional<User> findByEmail(String email);
+}
