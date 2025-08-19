@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: storytelling-postgres
+    environment:
+      POSTGRES_DB: storytelling_db
+      POSTGRES_USER: storyteller
+      POSTGRES_PASSWORD: storyai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - storytelling-network
+
+  # Spring Boot Application
+  app:
+    build: .
+    container_name: storytelling-backend
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/storytelling_db
+      SPRING_DATASOURCE_USERNAME: storyteller
+      SPRING_DATASOURCE_PASSWORD: storyai
+    networks:
+      - storytelling-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  storytelling-network:
+    driver: bridge
