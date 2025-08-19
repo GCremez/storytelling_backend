@@ -7,4 +7,3 @@ CREATE TABLE users (
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT true
 );
-
