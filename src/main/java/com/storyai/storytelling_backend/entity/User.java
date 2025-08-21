@@ -1,9 +1,15 @@
 package com.storyai.storytelling_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +26,6 @@ public class User {
 
 
     // CONSTRUCTORS
-    public User() {}
 
     public User(String username, String email, String password) {
         this.username = username;
@@ -28,4 +33,12 @@ public class User {
         this.passwordHash = password;
     }
 
+    // Additional getter for compatibility
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
