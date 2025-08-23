@@ -1,6 +1,6 @@
 CREATE TABLE story_sessions (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENTCES users(id),
+    user_id BIGINT REFERENCES users(id),
     story_id BIGINT REFERENCES stories(id),
     session_data JSONB DEFAULT '{}',
     current_chapter INTEGER DEFAULT 1,

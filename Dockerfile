@@ -20,7 +20,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -DskipTests -Dflyway.skip=true
 
 # Expose port 8080
 EXPOSE 8080
