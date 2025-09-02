@@ -2,36 +2,26 @@ package com.storyai.storytelling_backend.service;
 
 import com.storyai.storytelling_backend.entity.User;
 import com.storyai.storytelling_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService {
-
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    // Temporary method for development - creates a default user if none exists
     public User getOrCreateDefaultUser() {
-        Optional<User> existingUser = userRepository.findByUsername("defaultUser");
-
-        if (existingUser.isPresent()) {
-            return existingUser.get();
-        }
-
-        // Create default user for testing
-        User defaultUser = new User();
-        defaultUser.setUsername("defaultUser");
-        defaultUser.setEmail("default@test.com");
-        defaultUser.setPasswordHash("temp_hash");
-        defaultUser.setIsActive(true);
-
-        return userRepository.save(defaultUser);
+        return userRepository.findByUsername("defaultUser")
+                .orElseGet(() -> userRepository.save(
+                        User.builder()
+                                .username("defaultUser")
+                                .email("default@test.com")
+                                .passwordHash("temp_hash")
+                                .build()
+                ));
     }
 
     @Transactional(readOnly = true)

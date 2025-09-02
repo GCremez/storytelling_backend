@@ -1,15 +1,14 @@
 package com.storyai.storytelling_backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,28 +20,18 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash",nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
+    @Column(name = "is_active")
+    private boolean isActive = true;
 
-    // CONSTRUCTORS
-
-    public User(String username, String email, String password) {
+    // Add @Builder for better object creation
+    @Builder
+    public User(String username, String email, String passwordHash) {
         this.username = username;
         this.email = email;
-        this.passwordHash = password;
-    }
-
-    // Additional getter for compatibility
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setIsActive(boolean b) {
-
+        this.passwordHash = passwordHash;
+        this.isActive = true; // Default to active
     }
 }
