@@ -52,4 +52,31 @@ public class StorySession {
         this.story = story;
     }
 
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public Story getStory() { return story; }
+    public void setStory(Story story) { this.story = story; }
+
+    public String getSessionData() { return sessionData; }
+    public void setSessionData(String sessionData) { this.sessionData = sessionData; }
+
+    public Integer getCurrentChapter() { return currentChapter; }
+    public void setCurrentChapter(Integer currentChapter) { this.currentChapter = currentChapter; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getLastPlayed() { return lastPlayed; }
+    public void setLastPlayed(LocalDateTime lastPlayed) { this.lastPlayed = lastPlayed; }
+
+    public Boolean getIsCompleted() { return isCompleted; }
+    public void setIsCompleted(Boolean isCompleted) { this.isCompleted = isCompleted; }
+
+    public List<UserChoice> getChoices() { return choices; }
+    public void setChoices(List<UserChoice> choices) { this.choices = choices; }
 }

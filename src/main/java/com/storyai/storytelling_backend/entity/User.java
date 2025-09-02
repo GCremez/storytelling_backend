@@ -41,4 +41,8 @@ public class User {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public void setIsActive(boolean b) {
+
+    }
 }
