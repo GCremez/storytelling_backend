@@ -1,47 +1,45 @@
 package com.storyai.storytelling_backend.entity;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "story_chapters")
 public class StoryChapter {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "story_id", nullable = false)
-    private Story story;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "chapter_number", nullable = false)
-    private Integer chapterNumber;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "story_id", nullable = false)
+  private Story story;
 
-    private String title;
+  @Column(name = "chapter_number", nullable = false)
+  private Integer chapterNumber;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+  private String title;
 
-    @Column(name = "ai_generated")
-    private Boolean aiGenerated = false;
+  @Column(columnDefinition = "TEXT", nullable = false)
+  private String content;
 
-    @CreationTimestamp
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+  @Column(name = "ai_generated")
+  private Boolean aiGenerated = false;
 
-    // Constructor
-    // public StoryChapter() {}
+  @CreationTimestamp
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 
-    public StoryChapter(Story story, Integer chapterNumber, String title, String content) {
-        this.story = story;
-        this.chapterNumber = chapterNumber;
-        this.title = title;
-        this.content = content;
-    }
-    
+  // Constructor
+  // public StoryChapter() {}
 
+  public StoryChapter(Story story, Integer chapterNumber, String title, String content) {
+    this.story = story;
+    this.chapterNumber = chapterNumber;
+    this.title = title;
+    this.content = content;
+  }
 }
