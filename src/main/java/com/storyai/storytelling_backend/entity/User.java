@@ -1,14 +1,9 @@
 package com.storyai.storytelling_backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,14 +19,39 @@ public class User {
     private String passwordHash;
 
     @Column(name = "is_active")
-    private boolean isActive = true;
+    private boolean active = true;
 
-    // Add @Builder for better object creation
-    @Builder
-    public User(String username, String email, String passwordHash) {
+    // Constructors
+    public User() {}
+
+    public User(Long id, String username, String email, String passwordHash, boolean active) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.isActive = true; // Default to active
+        this.active = active;
     }
+
+    public User(String username, String email, String passwordHash, boolean isActive) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.active = isActive;
+    }
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

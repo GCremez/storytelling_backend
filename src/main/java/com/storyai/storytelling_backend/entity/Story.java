@@ -1,20 +1,12 @@
 package com.storyai.storytelling_backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "stories")
-@Getter
-@Setter
-@NoArgsConstructor
 public class Story {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,15 +20,11 @@ public class Story {
 
     private String genre;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "difficulty_level")
-    private DifficultyLevel difficultyLevel = DifficultyLevel.MEDIUM;
-
     @Column(name = "is_public")
     private Boolean isPublic = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="created_by")
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     @CreationTimestamp
@@ -47,32 +35,50 @@ public class Story {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Constructors
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty_level", nullable = false)
+    private DifficultyLevel difficultyLevel = DifficultyLevel.EASY;
 
-    public Story(String title,
-                 String description,
-                 String genre,
-                 User createdBy) {
+    // Constructors
+    public Story() {}
+
+    public Story(String title, String description, String genre, User createdBy) {
         this.title = title;
         this.description = description;
         this.genre = genre;
         this.createdBy = createdBy;
     }
 
-    // Additional getters and setters for compatibility
-    public User getCreatedBy() {
-        return createdBy;
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public String getGenre() { return genre; }
+    public void setGenre(String genre) { this.genre = genre; }
+    
+    public Boolean getIsPublic() { return isPublic; }
+    public void setIsPublic(Boolean isPublic) { this.isPublic = isPublic; }
+    
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public DifficultyLevel getDifficultyLevel() {
+        return difficultyLevel;
     }
 
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
+    public void setDifficultyLevel(DifficultyLevel difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
     }
 }

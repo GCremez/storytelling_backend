@@ -2,6 +2,7 @@ package com.storyai.storytelling_backend.controller;
 
 
 import com.storyai.storytelling_backend.DTO.CreateStoryRequest;
+import com.storyai.storytelling_backend.DTO.StoryResponse;
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.service.StoryService;
 import org.springframework.http.HttpStatus;
@@ -20,28 +21,28 @@ public class StoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Story>> getPublicStories(
+    public ResponseEntity<List<StoryResponse>> getPublicStories(
             @RequestParam(required = false) String genre) {
-        List<Story> stories;
+        List<Story> stories = (genre != null && !genre.isEmpty())
+                ? storyService.getStoriesByGenre(genre)
+                : storyService.getPublicStories();
 
-        if (genre != null && !genre.isEmpty()) {
-            stories = storyService.getStoriesByGenre(genre);
-        } else {
-            stories = storyService.getPublicStories();
-        }
-
-        return ResponseEntity.ok(stories);
+        return ResponseEntity.ok(
+                stories.stream().map(StoryResponse::fromEntity).toList()
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Story> getStory(@PathVariable Long id) {
+    public ResponseEntity<StoryResponse> getStory(@PathVariable Long id) {
         return storyService.getStoryById(id)
-                .map(story -> ResponseEntity.ok(story))
+                .map(story -> ResponseEntity.ok(StoryResponse.fromEntity(story)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @PostMapping
-    public ResponseEntity<Story> createStory(@RequestBody CreateStoryRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<StoryResponse> createStory(@RequestBody CreateStoryRequest request) {
         //TODO: Get current user from security context
         // For now, we'll need basic auth first
         
@@ -52,6 +53,6 @@ public class StoryController {
                 null // we'll fix this when we add authentication
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(story);
+        return ResponseEntity.status(HttpStatus.CREATED).body(StoryResponse.fromEntity(story));
     }
 }
