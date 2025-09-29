@@ -1,18 +1,22 @@
 package com.storyai.storytelling_backend.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class CreateStoryRequest {
+  @NotBlank
   private String title;
+  @NotBlank
   private String description;
+  @NotBlank
   private String genre;
 
-  // Constructor, getters and setters
+  public CreateStoryRequest() {}
+
   public CreateStoryRequest(String title, String description, String genre) {
     this.title = title;
     this.description = description;
     this.genre = genre;
   }
-
-  // Getters and setters
 
   public String getTitle() {
     return title;
@@ -32,5 +36,9 @@ public class CreateStoryRequest {
 
   public String getGenre() {
     return genre;
+  }
+
+  public void setGenre(String genre) {
+    this.genre = genre;
   }
 }

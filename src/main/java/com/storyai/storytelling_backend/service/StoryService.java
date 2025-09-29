@@ -40,7 +40,7 @@ public class StoryService {
     return storyRepository.findById(id);
   }
 
-  public Story PublishStory(Long storyId, User owner) {
+  public Story publishStory(Long storyId, User owner) {
     Story story =
         storyRepository
             .findById(storyId)

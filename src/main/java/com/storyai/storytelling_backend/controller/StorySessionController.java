@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.storyai.storytelling_backend.DTO.ChapterResponse;
 import com.storyai.storytelling_backend.DTO.StartSessionRequest;
 import com.storyai.storytelling_backend.DTO.UpdateProgressRequest;
 import com.storyai.storytelling_backend.entity.Story;
@@ -84,5 +85,22 @@ public class StorySessionController {
             session, request.getCurrentChapter(), request.getSessionData());
 
     return ResponseEntity.ok(updated);
+  }
+
+  @PostMapping("/{id}/next")
+  public ResponseEntity<?> nextChapter(@PathVariable Long id) {
+    StorySession session =
+        sessionService
+            .getSessionById(id)
+            .orElseThrow(() -> new RuntimeException("Session not found"));
+
+    if (Boolean.TRUE.equals(session.getIsCompleted())) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    var next = sessionService.advanceToNextChapter(session);
+    return next
+        .<ResponseEntity<?>>map(ch -> ResponseEntity.ok(ChapterResponse.fromEntity(ch)))
+        .orElse(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
   }
 }

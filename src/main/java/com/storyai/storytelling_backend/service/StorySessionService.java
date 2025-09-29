@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.storyai.storytelling_backend.entity.Story;
+import com.storyai.storytelling_backend.entity.StoryChapter;
 import com.storyai.storytelling_backend.entity.StorySession;
 import com.storyai.storytelling_backend.entity.User;
+import com.storyai.storytelling_backend.repository.StoryChapterRepository;
 import com.storyai.storytelling_backend.repository.StorySessionRepository;
 
 @Service
@@ -17,9 +19,11 @@ import com.storyai.storytelling_backend.repository.StorySessionRepository;
 public class StorySessionService {
 
   private final StorySessionRepository storySessionRepository;
+  private final StoryChapterRepository chapterRepository;
 
-  public StorySessionService(StorySessionRepository storySessionRepository) {
+  public StorySessionService(StorySessionRepository storySessionRepository, StoryChapterRepository chapterRepository) {
     this.storySessionRepository = storySessionRepository;
+    this.chapterRepository = chapterRepository;
   }
 
   public StorySession startNewSession(User user, Story story) {
@@ -48,6 +52,25 @@ public class StorySessionService {
   public StorySession completeSession(StorySession session) {
     session.setIsCompleted(true);
     return storySessionRepository.save(session);
+  }
+
+  public Optional<StoryChapter> advanceToNextChapter(StorySession session) {
+    int nextNumber = (session.getCurrentChapter() == null ? 1 : session.getCurrentChapter() + 1);
+    Optional<StoryChapter> next =
+        chapterRepository.findByStoryAndChapterNumber(session.getStory(), nextNumber);
+
+    if (next.isPresent()) {
+      session.setCurrentChapter(nextNumber);
+      session.setLastPlayed(LocalDateTime.now());
+      storySessionRepository.save(session);
+      return next;
+    }
+
+    // No more chapters -> mark complete
+    session.setIsCompleted(true);
+    session.setLastPlayed(LocalDateTime.now());
+    storySessionRepository.save(session);
+    return Optional.empty();
   }
 
   @Transactional(readOnly = true)

@@ -10,6 +10,7 @@ import com.storyai.storytelling_backend.DTO.CreateStoryRequest;
 import com.storyai.storytelling_backend.DTO.StoryResponse;
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.service.StoryService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/stories")
@@ -41,7 +42,7 @@ public class StoryController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public ResponseEntity<StoryResponse> createStory(@RequestBody CreateStoryRequest request) {
+  public ResponseEntity<StoryResponse> createStory(@Valid @RequestBody CreateStoryRequest request) {
     // TODO: Get current user from security context
     // For now, we'll need basic auth first
 
