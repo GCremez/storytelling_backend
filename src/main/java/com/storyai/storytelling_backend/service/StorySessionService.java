@@ -21,7 +21,8 @@ public class StorySessionService {
   private final StorySessionRepository storySessionRepository;
   private final StoryChapterRepository chapterRepository;
 
-  public StorySessionService(StorySessionRepository storySessionRepository, StoryChapterRepository chapterRepository) {
+  public StorySessionService(
+      StorySessionRepository storySessionRepository, StoryChapterRepository chapterRepository) {
     this.storySessionRepository = storySessionRepository;
     this.chapterRepository = chapterRepository;
   }

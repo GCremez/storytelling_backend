@@ -99,8 +99,7 @@ public class StorySessionController {
     }
 
     var next = sessionService.advanceToNextChapter(session);
-    return next
-        .<ResponseEntity<?>>map(ch -> ResponseEntity.ok(ChapterResponse.fromEntity(ch)))
+    return next.<ResponseEntity<?>>map(ch -> ResponseEntity.ok(ChapterResponse.fromEntity(ch)))
         .orElse(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
   }
 }

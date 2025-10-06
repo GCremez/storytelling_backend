@@ -2,6 +2,8 @@ package com.storyai.storytelling_backend.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +12,6 @@ import com.storyai.storytelling_backend.DTO.CreateStoryRequest;
 import com.storyai.storytelling_backend.DTO.StoryResponse;
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.service.StoryService;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/stories")

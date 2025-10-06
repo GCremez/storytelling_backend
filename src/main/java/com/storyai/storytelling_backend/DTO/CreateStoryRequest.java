@@ -3,12 +3,9 @@ package com.storyai.storytelling_backend.DTO;
 import jakarta.validation.constraints.NotBlank;
 
 public class CreateStoryRequest {
-  @NotBlank
-  private String title;
-  @NotBlank
-  private String description;
-  @NotBlank
-  private String genre;
+  @NotBlank private String title;
+  @NotBlank private String description;
+  @NotBlank private String genre;
 
   public CreateStoryRequest() {}
 

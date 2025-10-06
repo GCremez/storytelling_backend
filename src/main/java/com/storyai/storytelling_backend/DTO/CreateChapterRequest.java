@@ -4,14 +4,22 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Request object for creating a new chapter")
 public class CreateChapterRequest {
-  @NotNull
-  @Min(1)
+  @Schema(description = "Chapter number (must be positive)", example = "1", required = true)
+  @NotNull @Min(1)
   private Integer chapterNumber;
 
+  @Schema(description = "Chapter title", example = "The Beginning", required = true)
   @NotBlank
   private String title;
 
+  @Schema(
+      description = "Chapter content in markdown format",
+      example = "You find yourself in a dark forest...",
+      required = true)
   @NotBlank
   private String content;
 

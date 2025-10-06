@@ -1,15 +1,15 @@
 package com.storyai.storytelling_backend.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
@@ -26,11 +26,10 @@ public class JwtUtil {
 
   public String generateToken(String username) {
     return Jwts.builder()
-      .subject(username)
-      .issuedAt(Date.from(Instant.now()))
-      .expiration(Date.from(Instant.now().plus(expiration, ChronoUnit.SECONDS)))
-      .signWith(getSigningKey())
-      .compact();
+        .subject(username)
+        .issuedAt(Date.from(Instant.now()))
+        .expiration(Date.from(Instant.now().plus(expiration, ChronoUnit.SECONDS)))
+        .signWith(getSigningKey())
+        .compact();
   }
-
-  }
+}
