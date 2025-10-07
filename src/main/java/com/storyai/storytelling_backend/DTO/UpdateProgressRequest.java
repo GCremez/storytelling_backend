@@ -15,6 +15,7 @@ public class UpdateProgressRequest {
     return currentChapter;
   }
 
+
   public void setCurrentChapter(Integer currentChapter) {
     this.currentChapter = currentChapter;
   }
