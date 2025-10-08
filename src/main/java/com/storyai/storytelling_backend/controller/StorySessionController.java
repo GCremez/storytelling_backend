@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.storyai.storytelling_backend.DTO.ChapterResponse;
@@ -33,11 +35,15 @@ public class StorySessionController {
   }
 
   @PostMapping
-  public ResponseEntity<StorySession> startSession(@RequestBody StartSessionRequest request) {
-    // TODO: Get current user from security context
-    // For now, we are creating a default user
+  public ResponseEntity<StorySession> startSession(
+    @RequestBody StartSessionRequest request,
+    @AuthenticationPrincipal UserDetails userDetails) {
 
-    User user = userService.getOrCreateDefaultUser();
+    // Get the authenticated user
+    User user =
+        userService
+            .findByUsername(userDetails.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
     Story story =
         storyService
@@ -50,6 +56,7 @@ public class StorySessionController {
       return ResponseEntity.ok(existingSession.get());
     }
 
+    // Start a new session
     StorySession session = sessionService.startNewSession(user, story);
     return ResponseEntity.status(HttpStatus.CREATED).body(session);
   }
@@ -81,7 +88,7 @@ public class StorySessionController {
             .orElseThrow(() -> new RuntimeException("Session not found"));
 
     StorySession updated =
-        sessionService.UpdateSession(
+        sessionService.updateSession(
             session, request.getCurrentChapter(), request.getSessionData());
 
     return ResponseEntity.ok(updated);

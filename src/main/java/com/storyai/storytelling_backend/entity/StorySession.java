@@ -34,22 +34,35 @@ public class StorySession {
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
+  @Column(name = "started_at")
+  private LocalDateTime startedAt;
+
   @UpdateTimestamp
   @Column(name = "last_played")
   private LocalDateTime lastPlayed;
 
+  @Column(name = "last_activity_at")
+  private LocalDateTime lastActivityAt;
+
   @Column(name = "is_completed")
   private Boolean isCompleted = false;
+
+  @Column(name = "completed_at")
+  private LocalDateTime completedAt;
 
   @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private List<UserChoice> choices;
 
   // Constructors
-  public StorySession() {}
+  public StorySession() {
+    this.startedAt = LocalDateTime.now();
+  }
 
   public StorySession(User user, Story story) {
     this.user = user;
     this.story = story;
+    this.startedAt = LocalDateTime.now();
+    this.lastActivityAt = LocalDateTime.now();
   }
 
   // Getters and Setters
@@ -101,6 +114,14 @@ public class StorySession {
     this.createdAt = createdAt;
   }
 
+  public LocalDateTime getStartedAt() {
+    return startedAt;
+  }
+
+  public void setStartedAt(LocalDateTime startedAt) {
+    this.startedAt = startedAt;
+  }
+
   public LocalDateTime getLastPlayed() {
     return lastPlayed;
   }
@@ -109,12 +130,28 @@ public class StorySession {
     this.lastPlayed = lastPlayed;
   }
 
+  public LocalDateTime getLastActivityAt() {
+    return lastActivityAt;
+  }
+
+  public void setLastActivityAt(LocalDateTime lastActivityAt) {
+    this.lastActivityAt = lastActivityAt;
+  }
+
   public Boolean getIsCompleted() {
     return isCompleted;
   }
 
   public void setIsCompleted(Boolean isCompleted) {
     this.isCompleted = isCompleted;
+  }
+
+  public LocalDateTime getCompletedAt() {
+    return completedAt;
+  }
+
+  public void setCompletedAt(LocalDateTime completedAt) {
+    this.completedAt = completedAt;
   }
 
   public List<UserChoice> getChoices() {

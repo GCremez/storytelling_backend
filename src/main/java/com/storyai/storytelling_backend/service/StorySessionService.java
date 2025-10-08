@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.storyai.storytelling_backend.DTO.CurrentChapterResponse;
-import com.storyai.storytelling_backend.DTO.StartSessionRequest;
+import com.storyai.storytelling_backend.DTO.*;
 import com.storyai.storytelling_backend.entity.*;
 import com.storyai.storytelling_backend.exception.NotFoundException;
 import com.storyai.storytelling_backend.repository.*;
@@ -56,7 +55,7 @@ public class StorySessionService {
   }
 
   // Update session progress with new chapter and session data
-  public StorySession UpdateSession(StorySession session, Integer newChapter, String sessionData) {
+  public StorySession updateSession(StorySession session, Integer newChapter, String sessionData) {
     session.setCurrentChapter(newChapter);
     session.setSessionData(sessionData);
     session.setLastPlayed(LocalDateTime.now());
@@ -96,12 +95,9 @@ public class StorySessionService {
   }
 
   // Start a session with DTO request
-  public StorySession startSession(StartSessionRequest request) {
+  public StorySession startSession(StartSessionRequest request, User user) {
     Story story = storyRepository.findById(request.getStoryId())
       .orElseThrow(() -> new RuntimeException("Story not found with id: " + request.getStoryId()));
-
-    User user = userRepository.findById(request.getUserId())
-      .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
 
     // Use existing session if available
     return startNewSession(user, story);
@@ -172,7 +168,7 @@ public class StorySessionService {
     choiceRepository.save(choice);
 
     //Advance to next chapter
-    Integer nextChapterNumber = choice.getONextChapterNumber();
+    Integer nextChapterNumber = choice.getNextChapterNumber();
     if (nextChapterNumber != null) {
       session.setCurrentChapter(nextChapterNumber);
       session.setLastPlayed(LocalDateTime.now());
