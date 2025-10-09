@@ -36,8 +36,7 @@ public class StorySessionController {
 
   @PostMapping
   public ResponseEntity<StorySession> startSession(
-    @RequestBody StartSessionRequest request,
-    @AuthenticationPrincipal UserDetails userDetails) {
+      @RequestBody StartSessionRequest request, @AuthenticationPrincipal UserDetails userDetails) {
 
     // Get the authenticated user
     User user =

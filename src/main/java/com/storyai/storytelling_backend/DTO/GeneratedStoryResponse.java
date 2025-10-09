@@ -1,8 +1,5 @@
 package com.storyai.storytelling_backend.DTO;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
 import java.util.Map;
 
 public class GeneratedStoryResponse {
@@ -16,22 +13,51 @@ public class GeneratedStoryResponse {
   public GeneratedStoryResponse() {}
 
   // Getters and Setters
-  public String getContent() { return content; }
-  public void setContent(String content) { this.content = content; }
+  public String getContent() {
+    return content;
+  }
 
-  public String getTitle() { return title; }
-  public void setTitle(String title) { this.title = title; }
+  public void setContent(String content) {
+    this.content = content;
+  }
 
-  public Integer getWordCount() { return wordCount; }
-  public void setWordCount(Integer wordCount) { this.wordCount = wordCount; }
+  public String getTitle() {
+    return title;
+  }
 
-  public String getAiProvider() { return aiProvider; }
-  public void setAiProvider(String aiProvider) { this.aiProvider = aiProvider; }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-  public Boolean getCached() { return cached; }
-  public void setCached(Boolean cached) { this.cached = cached; }
+  public Integer getWordCount() {
+    return wordCount;
+  }
 
-  public Map<String, Object> getMetadata() { return metadata; }
-  public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+  public void setWordCount(Integer wordCount) {
+    this.wordCount = wordCount;
+  }
 
+  public String getAiProvider() {
+    return aiProvider;
+  }
+
+  public void setAiProvider(String aiProvider) {
+    this.aiProvider = aiProvider;
+  }
+
+  public Boolean getCached() {
+    return cached;
+  }
+
+  public void setCached(Boolean cached) {
+    this.cached = cached;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(Map<String, Object> metadata) {
+    this.metadata = metadata;
+  }
 }

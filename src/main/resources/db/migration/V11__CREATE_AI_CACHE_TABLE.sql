@@ -9,5 +9,11 @@ CREATE TABLE IF NOT EXISTS ai_cache (
 );
 
 
+-- indexes
 CREATE INDEX IF NOT EXISTS idx_ai_cache_key ON ai_cache(cache_key);
-CREATE INDEX IF NOT EXISTS idx_ai_cache_expires ON ai_cache(expires_at);
+CREATE INDEX IF NOT EXISTS idx_ai_cache_expires_at ON ai_cache(expires_at);
+CREATE INDEX IF NOT EXISTS idx_ai_cache_last_accessed ON ai_cache(last_accessed_at);
+
+-- comment to table
+COMMENT ON TABLE ai_cache IS 'Caches AI-generated content to reduce API calls and costs';
+

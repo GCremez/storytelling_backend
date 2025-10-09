@@ -59,7 +59,8 @@ public class UserChoice {
   }
 
   // New constructor without session (for pre-defined choices)
-  public UserChoice(StoryChapter chapter, String choiceText, Integer optionNumber, Integer nextChapterNumber) {
+  public UserChoice(
+      StoryChapter chapter, String choiceText, Integer optionNumber, Integer nextChapterNumber) {
     this.chapter = chapter;
     this.choiceText = choiceText;
     this.optionNumber = optionNumber;

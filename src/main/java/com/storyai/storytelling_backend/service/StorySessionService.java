@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.storyai.storytelling_backend.DTO.*;
 import com.storyai.storytelling_backend.entity.*;
 import com.storyai.storytelling_backend.exception.NotFoundException;
 import com.storyai.storytelling_backend.repository.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -96,8 +97,11 @@ public class StorySessionService {
 
   // Start a session with DTO request
   public StorySession startSession(StartSessionRequest request, User user) {
-    Story story = storyRepository.findById(request.getStoryId())
-      .orElseThrow(() -> new RuntimeException("Story not found with id: " + request.getStoryId()));
+    Story story =
+        storyRepository
+            .findById(request.getStoryId())
+            .orElseThrow(
+                () -> new RuntimeException("Story not found with id: " + request.getStoryId()));
 
     // Use existing session if available
     return startNewSession(user, story);
@@ -106,14 +110,20 @@ public class StorySessionService {
   // Get current chapter with available choices
   @Transactional(readOnly = true)
   public CurrentChapterResponse getCurrentChapter(Long sessionId) {
-    StorySession session = storySessionRepository.findById(sessionId)
-      .orElseThrow(() -> new NotFoundException("Session not found with id" + sessionId));
+    StorySession session =
+        storySessionRepository
+            .findById(sessionId)
+            .orElseThrow(() -> new NotFoundException("Session not found with id" + sessionId));
 
     // Get current chapter
-    Integer currentChapterNumber = session.getCurrentChapter() != null ? session.getCurrentChapter() : 1;
-    StoryChapter chapter = chapterRepository
-      .findByStoryAndChapterNumber(session.getStory(), currentChapterNumber)
-      .orElseThrow(() -> new NotFoundException("Chapter " + currentChapterNumber + "not found with id"));
+    Integer currentChapterNumber =
+        session.getCurrentChapter() != null ? session.getCurrentChapter() : 1;
+    StoryChapter chapter =
+        chapterRepository
+            .findByStoryAndChapterNumber(session.getStory(), currentChapterNumber)
+            .orElseThrow(
+                () ->
+                    new NotFoundException("Chapter " + currentChapterNumber + "not found with id"));
 
     // Get available choices for this chapter
     List<UserChoice> choices = choiceRepository.findByChapterOrderByOptionNumberAsc(chapter);
@@ -126,13 +136,13 @@ public class StorySessionService {
     response.setTimestamp(LocalDateTime.now());
 
     // Map choices to CHOICEOption
-    List<CurrentChapterResponse.ChoiceOption> choiceOptions = choices.stream()
-      .map(choice -> new CurrentChapterResponse.ChoiceOption(
-        choice.getId(),
-        choice.getChoiceText(),
-        choice.getOptionNumber()
-      ))
-      .collect(Collectors.toList());
+    List<CurrentChapterResponse.ChoiceOption> choiceOptions =
+        choices.stream()
+            .map(
+                choice ->
+                    new CurrentChapterResponse.ChoiceOption(
+                        choice.getId(), choice.getChoiceText(), choice.getOptionNumber()))
+            .collect(Collectors.toList());
 
     response.setAvailableChoices(choiceOptions);
     return response;
@@ -141,8 +151,10 @@ public class StorySessionService {
   // Make a choice and advance the story
 
   public CurrentChapterResponse makeChoice(Long sessionId, MakeChoiceRequest request) {
-    StorySession session = storySessionRepository.findById(sessionId)
-      .orElseThrow(() -> new NotFoundException("Session not found with id: " + sessionId));
+    StorySession session =
+        storySessionRepository
+            .findById(sessionId)
+            .orElseThrow(() -> new NotFoundException("Session not found with id: " + sessionId));
 
     // Check if session is completed
     if (session.getIsCompleted() != null && session.getIsCompleted()) {
@@ -150,24 +162,29 @@ public class StorySessionService {
     }
 
     // Validate the choice exists
-    UserChoice choice = choiceRepository.findById(request.getChoiceId())
-      .orElseThrow(() -> new NotFoundException("Choice not found with id: " + request.getChoiceId()));
+    UserChoice choice =
+        choiceRepository
+            .findById(request.getChoiceId())
+            .orElseThrow(
+                () -> new NotFoundException("Choice not found with id: " + request.getChoiceId()));
 
     // Get Current Chapter
-    Integer currentChapterNumber = session.getCurrentChapter() != null ? session.getCurrentChapter() : 1;
-    StoryChapter currentChapter = chapterRepository
-      .findByStoryAndChapterNumber(session.getStory(), currentChapterNumber)
-      .orElseThrow(() -> new NotFoundException("Current chapter not found"));
+    Integer currentChapterNumber =
+        session.getCurrentChapter() != null ? session.getCurrentChapter() : 1;
+    StoryChapter currentChapter =
+        chapterRepository
+            .findByStoryAndChapterNumber(session.getStory(), currentChapterNumber)
+            .orElseThrow(() -> new NotFoundException("Current chapter not found"));
 
     // Check if choice is valid for current chapter
     if (!choice.getChapter().getId().equals(currentChapter.getId())) {
       throw new IllegalStateException("Choice does not belong to current chapter");
     }
-    //Record the choice
+    // Record the choice
     choice.setChosenAt(LocalDateTime.now());
     choiceRepository.save(choice);
 
-    //Advance to next chapter
+    // Advance to next chapter
     Integer nextChapterNumber = choice.getNextChapterNumber();
     if (nextChapterNumber != null) {
       session.setCurrentChapter(nextChapterNumber);
@@ -184,60 +201,57 @@ public class StorySessionService {
     return getCurrentChapter(sessionId);
   }
 
+  /** Get choice history for a session */
+  @Transactional(readOnly = true)
+  public ChoiceHistoryResponse getChoiceHistory(Long sessionId) {
+    StorySession session =
+        storySessionRepository
+            .findById(sessionId)
+            .orElseThrow(() -> new NotFoundException("Session not found with id: " + sessionId));
 
-/**
- * Get choice history for a session
- */
+    // Get all choices made in this story
+    List<UserChoice> madeChoices =
+        choiceRepository.findByChapterStoryAndChosenAtIsNotNull(session.getStory());
 
-@Transactional(readOnly = true)
-public ChoiceHistoryResponse getChoiceHistory(Long sessionId) {
-  StorySession session = storySessionRepository.findById(sessionId)
-    .orElseThrow(() -> new NotFoundException("Session not found with id: " + sessionId));
+    ChoiceHistoryResponse response = new ChoiceHistoryResponse();
+    response.setSessionId(sessionId);
+    response.setTotalChoicesMade(madeChoices.size());
 
-  // Get all choices made in this story
-  List<UserChoice> madeChoices = choiceRepository
-    .findByChapterStoryAndChosenAtIsNotNull(session.getStory());
+    List<ChoiceHistoryResponse.ChoiceRecord> choiceRecords =
+        madeChoices.stream()
+            .map(
+                choice -> {
+                  ChoiceHistoryResponse.ChoiceRecord record =
+                      new ChoiceHistoryResponse.ChoiceRecord();
+                  record.setChoiceId(choice.getId());
+                  record.setChapterNumber(choice.getChapter().getChapterNumber());
+                  record.setChapterTitle(choice.getChapter().getTitle());
+                  record.setChoiceText(choice.getChoiceText());
+                  record.setChosenAt(choice.getChosenAt());
+                  return record;
+                })
+            .collect(Collectors.toList());
 
-  ChoiceHistoryResponse response = new ChoiceHistoryResponse();
-  response.setSessionId(sessionId);
-  response.setTotalChoicesMade(madeChoices.size());
+    response.setChoices(choiceRecords);
 
-  List<ChoiceHistoryResponse.ChoiceRecord> choiceRecords = madeChoices.stream()
-    .map(choice -> {
-      ChoiceHistoryResponse.ChoiceRecord record =
-        new ChoiceHistoryResponse.ChoiceRecord();
-      record.setChoiceId(choice.getId());
-      record.setChapterNumber(choice.getChapter().getChapterNumber());
-      record.setChapterTitle(choice.getChapter().getTitle());
-      record.setChoiceText(choice.getChoiceText());
-      record.setChosenAt(choice.getChosenAt());
-      return record;
-    })
-    .collect(Collectors.toList());
-
-  response.setChoices(choiceRecords);
-
-  return response;
-}
-
-/**
- * Get all sessions for a user by user ID
- */
-
-@Transactional(readOnly = true)
-public List<StorySession> getUserSessionsByUserId(Long userId) {
-  User user = userRepository.findById(userId)
-    .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
-  return getUserSessions(user);
-}
-
-/**
- * Delete a session
- */
-public void deleteSession(Long sessionId) {
-  if (!storySessionRepository.existsById(sessionId)) {
-    throw new NotFoundException("Session not found with id: " + sessionId);
+    return response;
   }
-  storySessionRepository.deleteById(sessionId);
-}
+
+  /** Get all sessions for a user by user ID */
+  @Transactional(readOnly = true)
+  public List<StorySession> getUserSessionsByUserId(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+    return getUserSessions(user);
+  }
+
+  /** Delete a session */
+  public void deleteSession(Long sessionId) {
+    if (!storySessionRepository.existsById(sessionId)) {
+      throw new NotFoundException("Session not found with id: " + sessionId);
+    }
+    storySessionRepository.deleteById(sessionId);
+  }
 }
