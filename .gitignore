@@ -35,3 +35,16 @@ build/
 
 /src/main/resources/application.properties
 
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# API Keys
+**/api-keys.txt
+**/*-key.txt
+
+# OS
+.DS_Store
+Thumbs.db

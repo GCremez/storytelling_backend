@@ -1,19 +1,17 @@
 package com.storyai.storytelling_backend.service;
 
-import com.storyai.storytelling_backend.entity.AICache;
-import com.storyai.storytelling_backend.repository.AICacheRepository;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.storyai.storytelling_backend.entity.AICache;
+import com.storyai.storytelling_backend.repository.AICacheRepository;
 
-
-/**
- * Service for caching AI-generated content to reduce API calls and costs
- */
+/** Service for caching AI-generated content to reduce API calls and costs */
 @Service
 @Transactional
 public class AICacheService {
@@ -23,53 +21,45 @@ public class AICacheService {
 
   private final AICacheRepository cacheRepository;
 
-  public AICacheService (AICacheRepository cacheRepository){
+  public AICacheService(AICacheRepository cacheRepository) {
     this.cacheRepository = cacheRepository;
   }
 
-  /**
-   * Get cached content if available and not expired
-   */
+  /** Get cached content if available and not expired */
+  @Transactional(readOnly = true)
+  public Optional<String> getCachedContent(String cacheKey) {
+    Optional<AICache> cached = cacheRepository.findByCacheKey(cacheKey);
 
+    if (cached.isEmpty()) {
+      logger.debug("Cache miss for key: {}", cacheKey);
+      return Optional.empty();
+    }
 
-@Transactional(readOnly = true)
-  public Optional<String> getCachedContent(String cacheKey){
-  Optional<AICache>cached =cacheRepository.findByCacheKey(cacheKey);
+    AICache cache = cached.get();
 
-  if (cached.isEmpty()) {
-    logger.debug("Cache miss for key: {}", cacheKey);
-    return Optional.empty();
+    // Check if expired
+    if (cache.getExpiresAt() != null && cache.getExpiresAt().isBefore(LocalDateTime.now())) {
+      logger.debug("Cache Expired for the key: {}", cacheKey);
+      cacheRepository.delete(cache);
+      return Optional.empty();
+    }
+
+    // Update hit count and last access time
+
+    cache.setHitCount(cache.getHitCount() + 1);
+    cache.setLastAccessedAt(LocalDateTime.now());
+    cacheRepository.save(cache);
+
+    logger.debug("Cache hit for key: {}", cacheKey, cache.getHitCount());
+    return Optional.of(cache.getContent());
   }
 
-  AICache cache = cached.get();
-
-  // Check if expired
-  if (cache.getExpiresAt() != null && cache.getExpiresAt().isBefore(LocalDateTime.now())) {
-    logger.debug("Cache Expired for the key: {}", cacheKey);
-    cacheRepository.delete(cache);
-    return Optional.empty();
-  }
-
-  // Update hit count and last access time
-
-  cache.setHitCount(cache.getHitCount() + 1);
-  cache.setLastAccessedAt(LocalDateTime.now());
-  cacheRepository.save(cache);
-
-  logger.debug("Cache hit for key: {}", cacheKey, cache.getHitCount());
-  return Optional.of(cache.getContent());
-  }
-
-  /**
-   * Cache content with default expiration time
-   */
+  /** Cache content with default expiration time */
   public void cacheContent(String cacheKey, String content) {
     cacheContent(cacheKey, content, DEFAULT_CACHE_HOURS);
   }
 
-  /**
-   * Cache content with custom expiration time
-   */
+  /** Cache content with custom expiration time */
   public void cacheContent(String cacheKey, String content, int expirationHours) {
     // Check if already exists
     Optional<AICache> existing = cacheRepository.findByCacheKey(cacheKey);
@@ -94,28 +84,25 @@ public class AICacheService {
     cacheRepository.save(cache);
   }
 
-  /**
-   * Invalidate (delete) cache content
-   */
-  public  void invalidateCache(String cacheKey) {
-    cacheRepository.findByCacheKey(cacheKey).ifPresent(cache -> {
-      cacheRepository.delete(cache);
-      logger.debug("Invalidated cache for key: {}", cacheKey);
-    });
+  /** Invalidate (delete) cache content */
+  public void invalidateCache(String cacheKey) {
+    cacheRepository
+        .findByCacheKey(cacheKey)
+        .ifPresent(
+            cache -> {
+              cacheRepository.delete(cache);
+              logger.debug("Invalidated cache for key: {}", cacheKey);
+            });
   }
 
-  /**
-   * Clear all expired cache entries
-   */
+  /** Clear all expired cache entries */
   public int clearExpiredCache() {
     int deleted = cacheRepository.deleteByExpiresAtBefore(LocalDateTime.now());
     logger.info("cleared {} expired cache entries", deleted);
     return deleted;
   }
 
-  /**
-   * Get cache statistics
-   */
+  /** Get cache statistics */
   @Transactional(readOnly = true)
   public CacheStats getCacheStats() {
     long totalEntries = cacheRepository.count();
@@ -129,19 +116,13 @@ public class AICacheService {
     return stats;
   }
 
-  /**
-   * Clear all cache (use with caution!)
-   */
+  /** Clear all cache (use with caution!) */
   public void clearAllCache() {
     cacheRepository.deleteAll();
     logger.warn("Cleared ALL cache entries");
   }
 
-
-  /**
-   * INNER CLASS
-   */
-
+  /** INNER CLASS */
   public static class CacheStats {
     private long totalEntries;
     private long totalHits;
@@ -153,7 +134,7 @@ public class AICacheService {
       this.averageHitsPerEntry = 0.0;
     }
 
-    public CacheStats(long totalEntries, long totalHits, double averageHitsPerEntry){
+    public CacheStats(long totalEntries, long totalHits, double averageHitsPerEntry) {
       this.totalEntries = totalEntries;
       this.totalHits = totalHits;
       this.averageHitsPerEntry = averageHitsPerEntry;
@@ -163,18 +144,23 @@ public class AICacheService {
     public long getTotalEntries() {
       return totalEntries;
     }
+
     public void setTotalEntries(long totalEntries) {
       this.totalEntries = totalEntries;
     }
+
     public long getTotalHits() {
       return totalHits;
     }
+
     public void setTotalHits(long totalHits) {
       this.totalHits = totalHits;
     }
+
     public double getAverageHitsPerEntry() {
       return averageHitsPerEntry;
     }
+
     public void setAverageHitsPerEntry(double averageHitsPerEntry) {
       this.averageHitsPerEntry = averageHitsPerEntry;
     }

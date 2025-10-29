@@ -1,16 +1,17 @@
 package com.storyai.storytelling_backend.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Entity for caching AI-generated content to reduce API costs
- */
+import jakarta.persistence.*;
+
+/** Entity for caching AI-generated content to reduce API costs */
 @Entity
-@Table(name = "ai_cache", indexes = {
-  @Index(name = "idx_cache_key", columnList = "cache_key"),
-  @Index(name = "idx_expires_at", columnList = "expires_at")
-})
+@Table(
+    name = "ai_cache",
+    indexes = {
+      @Index(name = "idx_cache_key", columnList = "cache_key"),
+      @Index(name = "idx_expires_at", columnList = "expires_at")
+    })
 public class AICache {
 
   @Id
