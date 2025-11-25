@@ -2,7 +2,7 @@ package com.storyai.storytelling_backend.DTO;
 
 import com.storyai.storytelling_backend.entity.User;
 
-public class LoginRespone {
+public class LoginResponse {
   private String accessToken;
   private String refreshToken;
   private String tokenType = "Bearer";
@@ -38,9 +38,9 @@ public class LoginRespone {
     public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
   }
 
-  public LoginRespone() {}
+  public LoginResponse() {}
 
-  public LoginRespone(String accessToken, String refreshToken, long expiresIn, User user) {
+  public LoginResponse(String accessToken, String refreshToken, long expiresIn, User user) {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.expiresIn = expiresIn;
