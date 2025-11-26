@@ -1,4 +1,14 @@
 package com.storyai.storytelling_backend.exception;
 
-public class EmailNotVerifiedException {
+public class EmailNotVerifiedException extends RuntimeException{
+  private final String email;
+
+  public EmailNotVerifiedException(String email) {
+    super("Email not verified. Please check your email for verification code");
+    this.email = email;
+  }
+
+  public String getEmail() {
+    return email;
+  }
 }
