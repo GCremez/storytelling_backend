@@ -1,6 +1,6 @@
 package com.storyai.storytelling_backend.exception;
 
-public class EmailNotVerifiedException extends RuntimeException{
+public class EmailNotVerifiedException extends AuthException{
   private final String email;
 
   public EmailNotVerifiedException(String email) {
