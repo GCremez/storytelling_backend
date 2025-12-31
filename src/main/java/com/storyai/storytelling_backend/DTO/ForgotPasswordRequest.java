@@ -8,9 +8,9 @@ public class ForgotPasswordRequest {
   @Email(message = "Invalid email format")
   private String email;
 
-  public forgotPasswordRequest() {}
+  public ForgotPasswordRequest() {}
 
-  public forgotPasswordRequest(String email) {
+  public ForgotPasswordRequest(String email) {
     this.email = email;
   }
 
