@@ -38,7 +38,7 @@ public class LoginResponse {
     public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
   }
 
-  public LoginResponse() {}
+  public LoginResponse(String accessToken, String token, Long expirationInSeconds, UserInfo userInfo) {}
 
   public LoginResponse(String accessToken, String refreshToken, long expiresIn, User user) {
     this.accessToken = accessToken;

@@ -45,7 +45,6 @@ public class StoryController {
   @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<StoryResponse> createStory(@Valid @RequestBody CreateStoryRequest request) {
     // TODO: Get current user from security context
-    // For now, we'll need basic auth first
 
     Story story =
         storyService.createStory(

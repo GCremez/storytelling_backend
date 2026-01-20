@@ -12,19 +12,20 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
   private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-  @Value("${sendgrid.apiKey}")
+  @Value("${sendgrid.apiKey:}")
   private String sendGridApiKey;
 
-  @Value("${sendgrid.from.email}")
+  @Value("${sendgrid.from.email:noreply@storytellingapp.com}")
   private String fromEmail;
 
-  @Value("${sendgrid.from.name::Storytelling App}")
+  @Value("${sendgrid.from.name:Storytelling App}")
   private String fromName;
 
   @Value("${app.frontend.url:http://localhost:3000}")
@@ -36,7 +37,6 @@ public class EmailService {
     String htmlContent = buildVerificationEmailHtml(username, verificationCode);
 
     sendEmail(toEmail, subject, htmlContent);
-    ;
   }
 
   /** Send welcome email after verification */
@@ -67,7 +67,7 @@ public class EmailService {
       Request request = new Request();
 
       request.setMethod(Method.POST);
-      request.setEndpoint("Mail/send");
+      request.setEndpoint("mail/send");
       request.setBody(mail.build());
 
       Response response = sg.api(request);
@@ -76,9 +76,9 @@ public class EmailService {
         logger.info("Email sent successfully to: {}", toEmail);
       } else {
         logger.error(
-            "Failed to send email. Status: {}, Body: {}",
-            response.getStatusCode(),
-            response.getBody());
+          "Failed to send email. Status: {}, Body: {}",
+          response.getStatusCode(),
+          response.getBody());
         throw new EmailSendException("SendGrid returned status: " + response.getStatusCode());
       }
 
@@ -132,7 +132,7 @@ public class EmailService {
                 </html>
 
   """
-        .formatted(username, code);
+      .formatted(username, code);
   }
 
   /** Build welcome email HTML */
@@ -183,7 +183,7 @@ public class EmailService {
             </body>
             </html>
             """
-        .formatted(username, loginUrl);
+      .formatted(username, loginUrl);
   }
 
   /** Build password reset email HTML */
@@ -226,6 +226,6 @@ public class EmailService {
             </body>
             </html>
             """
-        .formatted(username, resetUrl);
+      .formatted(username, resetUrl);
   }
 }

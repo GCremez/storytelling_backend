@@ -297,7 +297,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleGlobalException(
     Exception ex, WebRequest request) {
 
-    log.error("Unexpected error occurred at: {}", getPath(request));
+    //log.error("Unexpected error occurred at: {}", getPath(request));
     ErrorResponse errorResponse = new ErrorResponse(
       HttpStatus.INTERNAL_SERVER_ERROR.value(),
       "INTERNAL_SERVER_ERROR",

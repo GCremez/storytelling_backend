@@ -20,7 +20,11 @@ import java.util.stream.Collectors;
  * Uses Claude Sonnet or Opus models for content generation
  */
 @Service
-@ConditionalOnProperty(name = "ai.provider", havingValue = "claude")
+@ConditionalOnProperty(
+  prefix = "ai",
+  name = "ai.provider",
+  havingValue = "claude")
+
 public class ClaudeStoryGenerator implements AIStoryGenerator {
 
   private static final Logger logger = LoggerFactory.getLogger(ClaudeStoryGenerator.class);

@@ -7,6 +7,7 @@ import com.storyai.storytelling_backend.config.AIProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -19,6 +20,12 @@ import java.util.stream.Collectors;
  * Uses GPT-4 or GPT-3.5-turbo for content generation
  */
 @Service
+@ConditionalOnProperty(
+  prefix = "ai",
+  name = "provider",
+  havingValue = "openai",
+  matchIfMissing = true
+)
 public class OpenAIStoryGenerator implements AIStoryGenerator {
 
   private static final Logger logger = LoggerFactory.getLogger(OpenAIStoryGenerator.class);
@@ -41,7 +48,18 @@ public class OpenAIStoryGenerator implements AIStoryGenerator {
     this.restTemplate = restTemplate;
     this.objectMapper = objectMapper;
     this.cacheService = cacheService;
+
+    if (config.getOpenai() == null) {
+      throw new IllegalStateException("OpenAI configuration is missing.");
+    }
+
     this.config = config.getOpenai();
+    if (this.config.getApiKey() == null) {
+      throw new IllegalStateException(
+        "OpenAI API key is missing"
+      );
+    }
+
     this.apiKey = this.config.getApiKey();
     this.model = this.config.getModel() != null ? this.config.getModel() : "gpt-4";
     this.maxTokens = this.config.getMaxTokens() != null ? this.config.getMaxTokens() : 1000;
