@@ -21,13 +21,17 @@ public class RegisterRequest {
       message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")
   private String password;
 
+  @NotBlank(message = "Please confirm your password")
+  private String confirmPassword;
+
   // CONSTRUCTOR
   public RegisterRequest() {}
 
-  public RegisterRequest(String username, String email, String password) {
+  public RegisterRequest(String username, String email, String password, String confirmPassword) {
     this.username = username;
     this.email = email;
     this.password = password;
+    this.confirmPassword = confirmPassword;
   }
 
   // GETTERS AND SETTERS
@@ -39,4 +43,16 @@ public class RegisterRequest {
 
   public String getPassword() { return password; }
   public void setPassword(String password) { this.password = password; }
+
+  public String getConfirmPassword() { return confirmPassword; }
+  public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+
+  // validation method for confirmation of password
+  @AssertTrue(message = "Passwords must match")
+  public boolean isPasswordMatching() {
+    if (password == null || confirmPassword == null) {
+      return false;
+    }
+    return password.equals(confirmPassword);
+  }
 }
