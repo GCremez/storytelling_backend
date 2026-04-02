@@ -18,23 +18,63 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
   //ErrorResponse Class
+  @Schema(description = "Standard error response format")
   public static class ErrorResponse {
-    private LocalDateTime timestamp;
+    @Schema(
+        description = "Error timestamp",
+        example = "2026-04-02T19:20:05.887169"
+    )
+    private String timestamp;
+    
+    @Schema(
+        description = "HTTP status code",
+        example = "400"
+    )
     private int status;
+    
+    @Schema(
+        description = "Error type",
+        example = "BAD_REQUEST"
+    )
     private String error;
+    
+    @Schema(
+        description = "Error message",
+        example = "Validation failed"
+    )
     private String message;
+    
+    @Schema(
+        description = "Request path",
+        example = "/api/v1/stories"
+    )
     private String path;
+    
+    @Schema(
+        description = "Application-specific error code",
+        example = "VALIDATION_ERROR"
+    )
     private String errorCode;
+    
+    @Schema(
+        description = "List of validation errors (for validation failures)"
+    )
     private List<ValidationError> errors;
+    
+    @Schema(
+        description = "Additional error information"
+    )
     private Map<String, Object> additionalInfo;
 
     public ErrorResponse(){
-      this.timestamp = LocalDateTime.now();
+      this.timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     public ErrorResponse(int status, String error, String message, String path) {
@@ -45,10 +85,10 @@ public class GlobalExceptionHandler {
     }
 
     //GETTER AND SETTERS
-    public LocalDateTime getTimestamp() {
+    public String getTimestamp() {
       return timestamp;
     }
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(String timestamp) {
       this.timestamp = timestamp;
     }
     public int getStatus() {
@@ -79,8 +119,22 @@ public class GlobalExceptionHandler {
   }
 
   public static class ValidationError {
+    @Schema(
+        description = "Field name with validation error",
+        example = "title"
+    )
     private String field;
+    
+    @Schema(
+        description = "Validation error message",
+        example = "Title must not be blank"
+    )
     private String message;
+    
+    @Schema(
+        description = "Validation error code",
+        example = "VALIDATION_ERROR"
+    )
     private String code;
 
     public ValidationError(String field, String message, String code) {
