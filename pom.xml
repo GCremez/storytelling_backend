@@ -90,7 +90,7 @@
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.2.0</version>
+      <version>2.7.0</version>
     </dependency>
 
     <!-- Environment Variables -->
@@ -98,6 +98,12 @@
       <groupId>me.paulschwarz</groupId>
       <artifactId>spring-dotenv</artifactId>
       <version>4.0.0</version>
+    </dependency>
+
+    <!-- Jackson JSR310 for LocalDateTime support -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
 
     <!-- JWT Dependencies - REMOVED DUPLICATES -->

@@ -26,7 +26,7 @@ public class TestDataBuilder {
     user.setUsername("testuser" + userCounter);
     user.setEmail("testuser" + userCounter + "@example.com");
     user.setPasswordHash(password.encode("TestPass123"));
-    user.setEmailVerified(true);
+    user.setIsVerified(true);
     user.setCreatedAt(LocalDateTime.now());
     user.setUpdatedAt(LocalDateTime.now());
     return user;
@@ -38,7 +38,7 @@ public class TestDataBuilder {
    */
   public static User createUnverifiedUser(){
     User user = createUser();
-    user.setEmailVerified(false);
+    user.setIsVerified(false);
     return user;
   }
 

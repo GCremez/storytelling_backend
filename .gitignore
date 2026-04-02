@@ -86,3 +86,9 @@ node_modules/
 
 # Frontend build (if any)
 dist/
+
+# Development documentation
+TODO.md
+TODO.*
+NOTES.md
+NOTES.*
