@@ -60,6 +60,56 @@ docker-compose up -d
 # App at http://localhost:8081, DB at localhost:5432
 ```
 
+## Authentication System
+
+The backend now includes a complete JWT-based authentication system:
+
+### **Features**
+- **JWT Authentication**: Stateless token-based authentication
+- **User Registration**: Email verification required (SendGrid integration)
+- **Login/Logout**: Secure session management with refresh tokens
+- **Password Security**: BCrypt encryption with validation
+- **Protected Endpoints**: All story operations require authentication
+- **Public Access**: Story listing and viewing are public
+
+### **Authentication Flow**
+1. **Register**: Create account with email verification
+2. **Login**: Get JWT access and refresh tokens
+3. **Protected Requests**: Include `Authorization: Bearer <token>` header
+4. **Token Refresh**: Use refresh token to get new access token
+
+### **Security Configuration**
+- **JWT Secret**: Configured via `app.jwt.secret` environment variable
+- **Token Expiration**: Configured via `app.jwt.expiration` (default: 24 hours)
+- **Password Requirements**: Min 8 chars, uppercase, lowercase, digit, special character
+- **Email Verification**: Required for account activation
+
+### **API Access**
+```bash
+# Register new user
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"TestPass123!","confirmPassword":"TestPass123!"}'
+
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"testuser","password":"TestPass123!"}'
+
+# Create story (requires authentication)
+curl -X POST http://localhost:8080/api/v1/stories \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -d '{"title":"My Story","description":"A test story","genre":"fantasy"}'
+```
+
+### Docker (Simpler)
+
+```bash
+docker-compose up -d
+# App at http://localhost:8081, DB at localhost:5432
+```
+
 ## Environment Variables
 
 Copy `.env.example` to `.env`:
@@ -69,6 +119,45 @@ Copy `.env.example` to `.env`:
 DB_URL=jdbc:postgresql://localhost:5432/storytelling_db
 DB_USERNAME=storyteller
 DB_PASSWORD=storyai
+
+# AI Provider (pick one)
+AI_PROVIDER=openai          # or "claude"
+OPENAI_API_KEY=sk-...
+CLAUDE_API_KEY=sk-ant-...
+
+# JWT
+JWT_SECRET=your_secret_key_here
+JWT_EXPIRATION_MS=86400000
+
+# Optional: Email via SendGrid
+EMAIL_FROM=noreply@yourdomain.com
+SENDGRID_API_KEY=SG....
+```
+
+## Current Implementation Status
+
+### ✅ **Completed Features**
+- **JWT Authentication**: Complete token-based authentication system
+- **User Management**: Registration, login, logout with email verification
+- **Story CRUD**: Create, read, update, delete operations
+- **API Documentation**: Comprehensive OpenAPI/Swagger documentation
+- **Database**: PostgreSQL with Flyway migrations
+- **Security**: BCrypt password encryption, JWT validation
+- **Error Handling**: Global exception handler with proper responses
+
+### 🔧 **Authentication System**
+The authentication system is fully implemented and working:
+
+- **JWT Tokens**: Stateless authentication with configurable expiration
+- **User Registration**: Email verification via SendGrid (requires API keys)
+- **Protected Endpoints**: Story creation and user management require authentication
+- **Public Access**: Story listing and viewing are publicly accessible
+- **Password Security**: Strong validation with BCrypt encryption
+
+### 🚧 **Known Limitations**
+- **Email Service**: Requires SendGrid API keys for user registration
+- **AI Generation**: Needs OpenAI/Claude API keys configured
+- **Rate Limiting**: Configured but not implemented yet
 
 # AI Provider (pick one)
 AI_PROVIDER=openai          # or "claude"
@@ -177,5 +266,58 @@ The `docker-compose.yml` sets up:
 - PostgreSQL 17 with persistent volume
 - Spring Boot app on port 8081 (mapped to internal 8080)
 - Network isolation between services
+
+---
+
+## Authentication System Implementation Status ✅
+
+The storytelling backend now includes a **complete JWT-based authentication system**:
+
+### **Implemented Features**
+- **JWT Authentication**: Stateless token-based authentication with configurable expiration
+- **User Registration**: Email verification required (SendGrid integration)
+- **Login/Logout**: Secure session management with refresh tokens
+- **Password Security**: BCrypt encryption with strong validation
+- **Protected Endpoints**: All story operations require authentication
+- **Public Access**: Story listing and viewing are publicly accessible
+- **Security Configuration**: Proper Spring Security setup with JWT filter
+
+### **Authentication Flow**
+1. **Register**: Create account → Email verification → Account activation
+2. **Login**: Get JWT access and refresh tokens
+3. **Protected Requests**: Include `Authorization: Bearer <token>` header
+4. **Token Refresh**: Use refresh token to get new access token
+
+### **Security Configuration**
+- **JWT Secret**: Configured via `JWT_SECRET` environment variable
+- **Token Expiration**: Configured via `JWT_EXPIRATION_MS` (default: 24 hours)
+- **Password Requirements**: Min 8 chars, uppercase, lowercase, digit, special character
+- **Email Verification**: Required for account activation
+
+### **API Usage Examples**
+```bash
+# Register new user
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@example.com","password":"TestPass123!","confirmPassword":"TestPass123!"}'
+
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"testuser","password":"TestPass123!"}'
+
+# Create story (requires authentication)
+curl -X POST http://localhost:8080/api/v1/stories \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -d '{"title":"My Story","description":"A test story","genre":"fantasy"}'
+```
+
+### **Current Status**
+- ✅ **Authentication System**: Fully implemented and working
+- ✅ **JWT Token Management**: Generation, validation, and refresh working
+- ✅ **User Association**: Stories now created with actual user (not null)
+- ⚠️ **Email Service**: Requires SendGrid API keys for registration
+- ✅ **API Security**: Proper public/protected endpoint separation
 
 Database credentials in docker-compose match the `.env.example` defaults.
