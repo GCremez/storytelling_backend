@@ -26,7 +26,7 @@ public class Story {
   private Boolean isPublic = false;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "created_by", nullable = true)
+  @JoinColumn(name = "created_by")
   private User createdBy;
 
   @CreationTimestamp
