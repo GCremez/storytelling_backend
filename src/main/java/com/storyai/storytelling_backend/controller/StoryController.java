@@ -6,13 +6,16 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.storyai.storytelling_backend.DTO.CreateStoryRequest;
 import com.storyai.storytelling_backend.DTO.StoryResponse;
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.entity.User;
+import com.storyai.storytelling_backend.security.CustomUserDetails;
 import com.storyai.storytelling_backend.service.StoryService;
+import com.storyai.storytelling_backend.repository.UserRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,9 +31,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Story Management", description = "APIs for managing interactive stories")
 public class StoryController {
   private final StoryService storyService;
+  private final UserRepository userRepository;
 
-  public StoryController(StoryService storyService) {
+  public StoryController(StoryService storyService, UserRepository userRepository) {
     this.storyService = storyService;
+    this.userRepository = userRepository;
   }
 
   @GetMapping
@@ -134,15 +139,18 @@ public class StoryController {
         description = "Story creation request",
         required = true
       )
-      @Valid @RequestBody CreateStoryRequest request) {
-    // TODO: Get current user from security context
-    // For now, create story without user (created_by will be null)
+      @Valid @RequestBody CreateStoryRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    
+    // Get current user from security context
+    User currentUser = userDetails.getUser();
+    
     Story story =
         storyService.createStory(
             request.getTitle(),
             request.getDescription(),
             request.getGenre(),
-            null // temporary fix until auth is implemented
+            currentUser // now using actual authenticated user
             );
 
     return ResponseEntity.status(HttpStatus.CREATED).body(StoryResponse.fromEntity(story));
