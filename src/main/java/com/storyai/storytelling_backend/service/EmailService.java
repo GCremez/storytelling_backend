@@ -1,32 +1,30 @@
 package com.storyai.storytelling_backend.service;
 
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import com.storyai.storytelling_backend.exception.EmailSendException;
-import java.io.IOException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailService {
+@ConditionalOnProperty(name = "email.enabled", havingValue = "true", matchIfMissing = true)
+public class EmailService implements IEmailService {
   private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-  @Value("${sendgrid.apiKey:}")
-  private String sendGridApiKey;
+  @Autowired
+  private JavaMailSender mailSender;
 
-  @Value("${sendgrid.from.email:noreply@storytellingapp.com}")
+  @Value("${spring.mail.username}")
   private String fromEmail;
 
-  @Value("${sendgrid.from.name:Storytelling App}")
-  private String fromName;
+  @Value("${spring.mail.properties.mail.smtp.from:noreply@storytellingapp.com}")
+  private String smtpFromEmail;
 
   @Value("${app.frontend.url:http://localhost:3000}")
   private String frontendUrl;
@@ -55,36 +53,23 @@ public class EmailService {
     sendEmail(toEmail, subject, htmlContent);
   }
 
-  /** Core method to send email via SendGrid */
+  /** Core method to send email via Gmail SMTP */
   private void sendEmail(String toEmail, String subject, String htmlContent) {
     try {
-      Email from = new Email(fromEmail, fromName);
-      Email to = new Email(toEmail);
-      Content content = new Content("text/html", htmlContent);
-      Mail mail = new Mail(from, subject, to, content);
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-      SendGrid sg = new SendGrid(sendGridApiKey);
-      Request request = new Request();
+      helper.setFrom(smtpFromEmail);
+      helper.setTo(toEmail);
+      helper.setSubject(subject);
+      helper.setText(htmlContent, true); // true for HTML content
 
-      request.setMethod(Method.POST);
-      request.setEndpoint("mail/send");
-      request.setBody(mail.build());
+      mailSender.send(message);
+      logger.info("Email sent successfully to: {}", toEmail);
 
-      Response response = sg.api(request);
-
-      if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-        logger.info("Email sent successfully to: {}", toEmail);
-      } else {
-        logger.error(
-          "Failed to send email. Status: {}, Body: {}",
-          response.getStatusCode(),
-          response.getBody());
-        throw new EmailSendException("SendGrid returned status: " + response.getStatusCode());
-      }
-
-    } catch (IOException e) {
+    } catch (MessagingException e) {
       logger.error("Failed to send email to {}: {}", toEmail, e.getMessage());
-      throw new EmailSendException("Failed to send email", e);
+      throw new EmailSendException("Failed to send email: " + e.getMessage(), e);
     }
   }
 
