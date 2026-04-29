@@ -21,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -37,7 +39,7 @@ public class AuthService {
   private final PasswordResetTokenRepository passwordResetTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
-  private final EmailService emailService;
+  private final IEmailService emailService;
   private final CustomUserDetailsService userDetailsService;
   private final AuthenticationManager authenticationManager;
 
@@ -48,7 +50,7 @@ public class AuthService {
     PasswordResetTokenRepository passwordResetTokenRepository,
     PasswordEncoder passwordEncoder,
     JwtService jwtService,
-    EmailService emailService,
+    IEmailService emailService,
     CustomUserDetailsService userDetailsService,
     AuthenticationManager authenticationManager
   ) {
@@ -533,5 +535,128 @@ public MessageResponse deleteAccount(Long userId) {
   logger.info("Account deleted for user: {}", user.getUsername());
 
   return new MessageResponse("Account deleted successfully");
+}
+
+/**
+ * Passwordless authentication - Send OTP to email
+ */
+public MessageResponse sendPasswordlessOTP(PasswordlessAuthRequest request) {
+  logger.info("Sending passwordless OTP to: {}", request.getEmail());
+
+  String email = request.getEmail().toLowerCase().trim();
+
+  // Check if user exists, if not create one
+  User user = userRepository.findByEmail(email).orElseGet(() -> {
+    logger.info("Creating new user for passwordless auth: {}", email);
+    
+    // Generate unique username from email
+    String username = generateUsernameFromEmail(email);
+    
+    User newUser = new User();
+    newUser.setUsername(username);
+    newUser.setEmail(email);
+    newUser.setPasswordHash(""); // No password for passwordless auth
+    newUser.setIsVerified(false);
+    newUser.setIsActive(true);
+    newUser.setCreatedAt(LocalDateTime.now());
+    newUser.setUpdatedAt(LocalDateTime.now());
+    
+    return userRepository.save(newUser);
+  });
+
+  // Generate and send OTP
+  String verificationCode = generateVerificationCode();
+  
+  // Save verification code
+  EmailVerification emailVerification = new EmailVerification();
+  emailVerification.setUser(user);
+  emailVerification.setVerificationCode(verificationCode);
+  emailVerification.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+  emailVerificationRepository.save(emailVerification);
+
+  // Send email
+  try {
+    emailService.sendVerificationEmail(email, user.getUsername(), verificationCode);
+    logger.info("Passwordless OTP sent to: {}", email);
+  } catch (Exception e) {
+    logger.error("Failed to send passwordless OTP to {}: {}", email, e.getMessage());
+    // Don't fail - user can still proceed if they have the code
+  }
+
+  return new MessageResponse("Verification code sent to your email. Valid for 15 minutes.");
+}
+
+/**
+ * Passwordless authentication - Verify OTP and login
+ */
+public LoginResponse verifyPasswordlessOTP(PasswordlessVerifyRequest request) {
+  logger.info("Verifying passwordless OTP for: {}", request.getEmail());
+
+  String email = request.getEmail().toLowerCase().trim();
+  String code = request.getVerificationCode();
+
+  // Find user by email
+  User user = userRepository.findByEmail(email)
+    .orElseThrow(() -> new NotFoundException("User not found"));
+
+  // Find valid verification code
+  Optional<EmailVerification> verificationOpt = emailVerificationRepository
+    .findByUserEmailAndVerificationCodeAndVerifiedAtIsNull(email, code);
+  
+  EmailVerification verification = verificationOpt
+    .filter(ev -> !ev.isExpired())
+    .orElseThrow(() -> new InvalidVerificationCodeException());
+
+  // Mark verification as used
+  verification.setVerifiedAt(LocalDateTime.now());
+  emailVerificationRepository.save(verification);
+
+  // Update user status
+  user.setIsVerified(true);
+  user.setUpdatedAt(LocalDateTime.now());
+  userRepository.save(user);
+
+  // Generate JWT tokens
+  String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getId());
+  
+  RefreshToken refreshToken = new RefreshToken();
+  refreshToken.setUser(user);
+  refreshToken.setToken(UUID.randomUUID().toString());
+  refreshToken.setExpiresAt(LocalDateTime.now().plusDays(7));
+  refreshTokenRepository.save(refreshToken);
+
+  logger.info("Passwordless authentication successful for: {}", email);
+
+  // Build response
+  LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo(
+    user.getId(),
+    user.getUsername(),
+    user.getEmail(),
+    user.getIsVerified()
+  );
+
+  return new LoginResponse(
+    accessToken,
+    refreshToken.getToken(),
+    jwtService.getExpirationInSeconds(),
+    userInfo
+  );
+}
+
+/**
+ * Generate unique username from email
+ */
+private String generateUsernameFromEmail(String email) {
+  String baseUsername = email.split("@")[0].replaceAll("[^a-zA-Z0-9_]", "");
+  String username = baseUsername;
+  int counter = 1;
+
+  // Ensure username is unique
+  while (userRepository.existsByUsername(username)) {
+    username = baseUsername + counter;
+    counter++;
+  }
+
+  return username.length() > 20 ? username.substring(0, 20) : username;
 }
 }
