@@ -1,6 +1,8 @@
 package com.storyai.storytelling_backend.controller;
 
 import com.storyai.storytelling_backend.DTO.*;
+import com.storyai.storytelling_backend.DTO.PasswordlessAuthRequest;
+import com.storyai.storytelling_backend.DTO.PasswordlessVerifyRequest;
 import com.storyai.storytelling_backend.security.CustomUserDetails;
 import com.storyai.storytelling_backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -198,6 +200,41 @@ public class AuthController {
   public ResponseEntity<MessageResponse> deleteAccount(
     @AuthenticationPrincipal CustomUserDetails userDetails) {
     MessageResponse response = authService.deleteAccount(userDetails.getUserId());
+    return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Passwordless authentication - Send OTP to email
+   */
+  @PostMapping("/passwordless/send")
+  @Operation(summary = "Send passwordless OTP",
+    description = "Send 6-digit verification code to email for passwordless authentication")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "OTP sent successfully"),
+    @ApiResponse(responseCode = "400", description = "Invalid email format"),
+    @ApiResponse(responseCode = "429", description = "Too many requests")
+  })
+  public ResponseEntity<MessageResponse> sendPasswordlessOTP(
+    @Valid @RequestBody PasswordlessAuthRequest request) {
+    MessageResponse response = authService.sendPasswordlessOTP(request);
+    return ResponseEntity.ok(response);
+  }
+
+  /**
+   * Passwordless authentication - Verify OTP and login
+   */
+  @PostMapping("/passwordless/verify")
+  @Operation(summary = "Verify passwordless OTP",
+    description = "Verify 6-digit code and authenticate user")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Authentication successful"),
+    @ApiResponse(responseCode = "400", description = "Invalid verification code"),
+    @ApiResponse(responseCode = "404", description = "User not found"),
+    @ApiResponse(responseCode = "410", description = "Verification code expired")
+  })
+  public ResponseEntity<LoginResponse> verifyPasswordlessOTP(
+    @Valid @RequestBody PasswordlessVerifyRequest request) {
+    LoginResponse response = authService.verifyPasswordlessOTP(request);
     return ResponseEntity.ok(response);
   }
 }
