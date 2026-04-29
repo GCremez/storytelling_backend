@@ -1,0 +1,22 @@
+package com.storyai.storytelling_backend.DTO;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public class PasswordlessAuthRequest {
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    // CONSTRUCTOR
+    public PasswordlessAuthRequest() {}
+
+    public PasswordlessAuthRequest(String email) {
+        this.email = email;
+    }
+
+    // GETTERS AND SETTERS
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+}
