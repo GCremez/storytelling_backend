@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.storyai.storytelling_backend.DTO.ChapterResponse;
@@ -14,9 +13,9 @@ import com.storyai.storytelling_backend.DTO.UpdateProgressRequest;
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.entity.StorySession;
 import com.storyai.storytelling_backend.entity.User;
+import com.storyai.storytelling_backend.security.CustomUserDetails;
 import com.storyai.storytelling_backend.service.StoryService;
 import com.storyai.storytelling_backend.service.StorySessionService;
-import com.storyai.storytelling_backend.service.UserService;
 
 @RestController
 @RequestMapping("/api/v1/sessions")
@@ -24,25 +23,18 @@ public class StorySessionController {
 
   private final StorySessionService sessionService;
   private final StoryService storyService;
-  private final UserService userService;
 
-  // constructor
-  public StorySessionController(
-      StorySessionService sessionService, StoryService storyService, UserService userService) {
+  public StorySessionController(StorySessionService sessionService, StoryService storyService) {
     this.sessionService = sessionService;
     this.storyService = storyService;
-    this.userService = userService;
   }
 
   @PostMapping
   public ResponseEntity<StorySession> startSession(
-      @RequestBody StartSessionRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+      @RequestBody StartSessionRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
     // Get the authenticated user
-    User user =
-        userService
-            .findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    User user = userDetails.getUser();
 
     Story story =
         storyService
@@ -61,29 +53,37 @@ public class StorySessionController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<StorySession> getSession(@PathVariable Long id) {
-    // TODO: Add user authorization check
+  public ResponseEntity<StorySession> getSession(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User currentUser = userDetails.getUser();
     return sessionService
         .getSessionById(id)
-        .map(session -> ResponseEntity.ok(session))
+        .filter(session -> session.getUser().getId().equals(currentUser.getId()))
+        .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
 
   @GetMapping
-  public ResponseEntity<List<StorySession>> getUserSessions() {
-    // TODO: Get current user from security context
-    User user = userService.getOrCreateDefaultUser();
-    List<StorySession> sessions = sessionService.getUserSessions(user);
+  public ResponseEntity<List<StorySession>> getUserSessions(
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User currentUser = userDetails.getUser();
+    List<StorySession> sessions = sessionService.getUserSessions(currentUser);
     return ResponseEntity.ok(sessions);
   }
 
   @PutMapping("/{id}/progress")
   public ResponseEntity<StorySession> updateProgress(
-      @PathVariable Long id, @RequestBody UpdateProgressRequest request) {
+      @PathVariable Long id,
+      @RequestBody UpdateProgressRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
+    User currentUser = userDetails.getUser();
     StorySession session =
         sessionService
             .getSessionById(id)
+            .filter(s -> s.getUser().getId().equals(currentUser.getId()))
             .orElseThrow(() -> new RuntimeException("Session not found"));
 
     StorySession updated =
@@ -94,10 +94,14 @@ public class StorySessionController {
   }
 
   @PostMapping("/{id}/next")
-  public ResponseEntity<?> nextChapter(@PathVariable Long id) {
+  public ResponseEntity<?> nextChapter(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User currentUser = userDetails.getUser();
     StorySession session =
         sessionService
             .getSessionById(id)
+            .filter(s -> s.getUser().getId().equals(currentUser.getId()))
             .orElseThrow(() -> new RuntimeException("Session not found"));
 
     if (Boolean.TRUE.equals(session.getIsCompleted())) {
@@ -107,5 +111,20 @@ public class StorySessionController {
     var next = sessionService.advanceToNextChapter(session);
     return next.<ResponseEntity<?>>map(ch -> ResponseEntity.ok(ChapterResponse.fromEntity(ch)))
         .orElse(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteSession(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User currentUser = userDetails.getUser();
+    StorySession session =
+        sessionService
+            .getSessionById(id)
+            .filter(s -> s.getUser().getId().equals(currentUser.getId()))
+            .orElseThrow(() -> new RuntimeException("Session not found"));
+
+    sessionService.deleteSession(id);
+    return ResponseEntity.noContent().build();
   }
 }
