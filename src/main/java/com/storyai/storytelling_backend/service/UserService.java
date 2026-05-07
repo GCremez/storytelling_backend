@@ -17,19 +17,6 @@ public class UserService {
     this.userRepository = userRepository;
   }
 
-  public User getOrCreateDefaultUser() {
-    Optional<User> existingUser = userRepository.findByUsername("defaultUser");
-
-    if (existingUser.isPresent()) {
-      return existingUser.get();
-    }
-
-    // Create default user for testing
-    User defaultUser = new User("defaultUser", "default@test.com", "temp_hash", true);
-
-    return userRepository.save(defaultUser);
-  }
-
   @Transactional(readOnly = true)
   public Optional<User> findById(Long id) {
     return userRepository.findById(id);
