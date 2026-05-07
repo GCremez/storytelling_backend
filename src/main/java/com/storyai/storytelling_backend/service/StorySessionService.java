@@ -101,7 +101,7 @@ public class StorySessionService {
         storyRepository
             .findById(request.getStoryId())
             .orElseThrow(
-                () -> new RuntimeException("Story not found with id: " + request.getStoryId()));
+                () -> new NotFoundException("Story not found with id: " + request.getStoryId()));
 
     // Use existing session if available
     return startNewSession(user, story);

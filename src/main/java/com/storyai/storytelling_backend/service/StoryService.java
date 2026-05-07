@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.entity.User;
+import com.storyai.storytelling_backend.exception.NotFoundException;
 import com.storyai.storytelling_backend.repository.StoryRepository;
 
 @Service
@@ -44,7 +45,7 @@ public class StoryService {
     Story story =
         storyRepository
             .findById(storyId)
-            .orElseThrow(() -> new RuntimeException("Story not found"));
+            .orElseThrow(() -> new NotFoundException("Story not found"));
 
     if (!story.getCreatedBy().getId().equals(owner.getId())) {
       throw new RuntimeException("Not authorized to publish this story");
