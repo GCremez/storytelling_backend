@@ -398,31 +398,34 @@ private RefreshToken createRefreshToken(User user) {
 public MessageResponse forgotPassword(ForgotPasswordRequest request) {
   logger.info("Password reset requested for: {}", request.getEmail());
 
-  // Find user
-  User user = userRepository.findByEmail(request.getEmail())
-    .orElseThrow(() -> new NotFoundException("User not found"));
+  // Find user - do NOT throw if not found to prevent user enumeration
+  Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
 
-  // Delete old reset tokens
-  passwordResetTokenRepository.deleteByUser(user);
+  if (userOpt.isPresent()) {
+    User user = userOpt.get();
 
-  // Create new reset token
-  PasswordResetToken resetToken = new PasswordResetToken(user);
-  passwordResetTokenRepository.save(resetToken);
+    // Delete old reset tokens
+    passwordResetTokenRepository.deleteByUser(user);
 
-  // Send reset email
-  try {
-    emailService.sendPasswordResetEmail(
-      user.getEmail(),
-      user.getUsername(),
-      resetToken.getToken()
-    );
-    logger.info("Password reset email sent to: {}", user.getEmail());
-  } catch (EmailSendException e) {
-    logger.error("Failed to send password reset email", e);
-    throw e;
+    // Create new reset token
+    PasswordResetToken resetToken = new PasswordResetToken(user);
+    passwordResetTokenRepository.save(resetToken);
+
+    // Send reset email
+    try {
+      emailService.sendPasswordResetEmail(
+        user.getEmail(),
+        user.getUsername(),
+        resetToken.getToken()
+      );
+      logger.info("Password reset email sent to: {}", user.getEmail());
+    } catch (EmailSendException e) {
+      logger.error("Failed to send password reset email", e);
+      // Still return success to prevent user enumeration
+    }
   }
 
-  return new MessageResponse("Password reset email sent. Please check your inbox.");
+  return new MessageResponse("If an account with that email exists, a password reset link has been sent.");
 }
 
 /**
@@ -555,7 +558,9 @@ public MessageResponse sendPasswordlessOTP(PasswordlessAuthRequest request) {
     User newUser = new User();
     newUser.setUsername(username);
     newUser.setEmail(email);
-    newUser.setPasswordHash(""); // No password for passwordless auth
+    // Set a random password hash so the account has valid credentials
+    // User can later set their own password via change-password endpoint
+    newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
     newUser.setIsVerified(false);
     newUser.setIsActive(true);
     newUser.setCreatedAt(LocalDateTime.now());

@@ -41,7 +41,7 @@ public class MailConfig {
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", auth);
         props.put("mail.smtp.starttls.enable", starttls);
-        props.put("mail.debug", "true"); // Enable debug for troubleshooting
+        props.put("mail.debug", System.getenv().getOrDefault("MAIL_DEBUG", "false"));
 
         return mailSender;
     }

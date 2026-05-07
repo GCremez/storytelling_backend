@@ -67,7 +67,7 @@ public class AICacheService {
     AICache cache;
     if (existing.isPresent()) {
       cache = existing.get();
-      cache.setCacheKey(content);
+      cache.setContent(content);
       cache.setExpiresAt(LocalDateTime.now().plusHours(expirationHours));
       logger.debug("Updated cache for Key: {}", cacheKey);
     } else {

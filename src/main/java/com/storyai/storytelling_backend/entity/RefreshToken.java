@@ -38,7 +38,7 @@ public class RefreshToken {
   public RefreshToken(User user) {
     this.user =user;
     this.token = UUID.randomUUID().toString();
-    this.expiresAt = LocalDateTime.now().plusMinutes(7); // 7 days expiry
+    this.expiresAt = LocalDateTime.now().plusDays(7); // 7 days expiry
   }
 
   // Helper Methods

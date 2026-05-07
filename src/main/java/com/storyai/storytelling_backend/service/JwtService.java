@@ -64,7 +64,7 @@ private String createToken(Map<String, Object> claims, String subject, Long vali
     .setSubject(subject)
     .setIssuedAt(now)
     .setExpiration(expiryDate)
-    .signWith(getSigningKey(), SignatureAlgorithm.ES256)
+    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
     .compact();
 }
 

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @ConditionalOnProperty(
   prefix = "ai",
-  name = "ai.provider",
+  name = "provider",
   havingValue = "claude")
 
 public class ClaudeStoryGenerator implements AIStoryGenerator {
