@@ -49,7 +49,7 @@ public String generateRefreshToken(String username, Long userId) {
   claims.put("userId", userId);
   claims.put("type", "refresh");
 
-  return createToken(claims, username, expiration);
+  return createToken(claims, username, refreshExpiration);
 }
 
 /**
