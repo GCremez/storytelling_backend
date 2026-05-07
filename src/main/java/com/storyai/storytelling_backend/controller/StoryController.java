@@ -15,7 +15,6 @@ import com.storyai.storytelling_backend.entity.Story;
 import com.storyai.storytelling_backend.entity.User;
 import com.storyai.storytelling_backend.security.CustomUserDetails;
 import com.storyai.storytelling_backend.service.StoryService;
-import com.storyai.storytelling_backend.repository.UserRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,11 +30,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Story Management", description = "APIs for managing interactive stories")
 public class StoryController {
   private final StoryService storyService;
-  private final UserRepository userRepository;
 
-  public StoryController(StoryService storyService, UserRepository userRepository) {
+  public StoryController(StoryService storyService) {
     this.storyService = storyService;
-    this.userRepository = userRepository;
   }
 
   @GetMapping
@@ -154,5 +151,22 @@ public class StoryController {
             );
 
     return ResponseEntity.status(HttpStatus.CREATED).body(StoryResponse.fromEntity(story));
+  }
+
+  @PostMapping("/{id}/publish")
+  @Operation(
+      summary = "Publish a story",
+      description = "Makes a story publicly visible. Only the story owner can publish.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Story published successfully"),
+    @ApiResponse(responseCode = "403", description = "Not authorized to publish this story"),
+    @ApiResponse(responseCode = "404", description = "Story not found")
+  })
+  public ResponseEntity<StoryResponse> publishStory(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User currentUser = userDetails.getUser();
+    Story story = storyService.publishStory(id, currentUser);
+    return ResponseEntity.ok(StoryResponse.fromEntity(story));
   }
 }

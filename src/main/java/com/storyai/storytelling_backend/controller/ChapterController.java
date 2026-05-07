@@ -76,4 +76,18 @@ public class ChapterController {
         .map(c -> ResponseEntity.ok(ChapterResponse.fromEntity(c)))
         .orElse(ResponseEntity.notFound().build());
   }
+
+  @DeleteMapping("/chapters/{id}")
+  @Operation(
+      summary = "Delete a chapter",
+      description = "Deletes the specified chapter")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "204", description = "Chapter deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Chapter not found")
+      })
+  public ResponseEntity<Void> deleteChapter(@PathVariable Long id) {
+    chapterService.deleteChapter(id);
+    return ResponseEntity.noContent().build();
+  }
 }
